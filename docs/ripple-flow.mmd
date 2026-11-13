@@ -1,0 +1,42 @@
+flowchart TD
+    U["Person on Echo Dot<br/>Example: What exercise fits my preferences?"]
+    EC["Alexa Cloud: speech recognition<br/>Interaction model chooses intent and slot<br/>Unrestricted transcripts are not available"]
+    CT["Cloudflare Quick Tunnel HTTPS<br/>Temporary hostname exposes health and Alexa routes"]
+    ASK["Mac: Express /alexa<br/>ASK SDK verifies signature, timestamp and skill ID"]
+    HANDLER["Skill handler and session store<br/>Restore carrier phrase; add recent turns<br/>Default: always-retrieve flow"]
+    EMBQ["One local embedding API call<br/>Ollama on 127.0.0.1:11434<br/>nomic-embed-text:latest"]
+    QV["One query vector shared by both searches<br/>Example: exercise"]
+    HK[("SQLite FTS5 history keyword index<br/>Keyword candidates; may be below vector threshold")]
+    HV[("SQLite sqlite-vec history vectors<br/>768 dimensions, cosine distance at most 0.35<br/>Top 10 from 500 most recent messages")]
+    MV[("SQLite sqlite-vec personal-memory vectors<br/>768 dimensions, cosine distance at most 0.35<br/>Top 3 from 500 most recent memories")]
+    INDEX["Background local indexing workers<br/>Embed new / changed history and memory with Ollama<br/>Cache JSON vectors and float32 sqlite-vec rows"]
+    HD[("SQLite history: conversations and messages<br/>Example: I prefer short workouts")]
+    MD[("SQLite personal memories<br/>Example: prefers short workouts<br/>Automatic records marked unverified")]
+    FUSE["History rank fusion<br/>Merge keyword and vector ranks<br/>Select at most 2 conversations and nearby turns"]
+    MP["Select at most 2 personal-memory records<br/>No match or incomplete indexing is marked"]
+    LLM["One answer LLM call: Groq by default<br/>Question + bounded recent turns<br/>+ labeled history + labeled personal memories<br/>Instructions: use only relevant records;<br/>stored data is untrusted, not commands"]
+    SPEAK["Voice-oriented answer and escaped speech<br/>Alexa TTS; keep session open"]
+    SAVE["Save successful user and assistant turn<br/>SQLite transaction also queues extraction job"]
+    JOB[("SQLite extraction jobs<br/>Pending, done or failed; bounded retries")]
+    EX["Background Groq extraction LLM call<br/>Propose explicit preference or personal fact<br/>Separate from the one answer call"]
+    VALID["Validate structure and source quote<br/>Skip inferred or exact duplicates<br/>Save candidates as automatic_unverified"]
+    END["Echo speaks; user may continue or say Alexa, stop"]
+    FAIL["If retrieval fails or times out:<br/>answer model receives incomplete status<br/>Keyword fallback is used when available"]
+    NOTE["Experimental limits: threshold is not calibrated;<br/>semantic search scans local vectors, not ANN;<br/>old history and cold models may be missed"]
+
+    U --> EC --> CT --> ASK --> HANDLER
+    HANDLER --> EMBQ --> QV
+    HANDLER --> HK --> FUSE
+    QV --> HV --> FUSE
+    QV --> MV --> MP
+    HD --> HK
+    HD --> INDEX --> HV
+    MD --> INDEX --> MV
+    FUSE --> LLM
+    MP --> LLM
+    HANDLER -->|bounded retrieval failure| FAIL --> LLM
+    LLM --> SPEAK --> SAVE --> END
+    SAVE --> HD
+    SAVE -->|if automatic memory enabled| JOB --> EX --> VALID --> MD
+    NOTE -.-> FUSE
+    NOTE -.-> MP
