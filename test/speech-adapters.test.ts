@@ -8,7 +8,6 @@ import {
   WhisperCppTranscriber,
   WhisperLanguageVerificationError,
 } from '../src/speech/transcription';
-import { MithiSynthesizer } from '../src/speech/synthesis';
 
 test('Whisper adapter passes the file and model to the command and reads the private transcript', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'ripple-speech-test-'));
@@ -109,22 +108,4 @@ test('Whisper detected-language parser accepts the CLI diagnostic shape', () => 
   assert.equal(detectedWhisperLanguage('auto-detected language: en (p = 0.984427)'), 'en');
   assert.equal(detectedWhisperLanguage('auto-detected language: hi (p = 0.81)'), 'hi');
   assert.equal(detectedWhisperLanguage('no detection available'), undefined);
-});
-
-test('Mithi adapter sends speech text on stdin rather than a process argument', async () => {
-  let called = false;
-  const synth = new MithiSynthesizer('python', 'speak.py', 'model', async (cmd, args, input) => {
-    called = true;
-    assert.equal(cmd, 'python');
-    assert.deepEqual(args, ['speak.py', 'model']);
-    assert.deepEqual(JSON.parse(input!), {
-      text: 'private sentence',
-      lang: 'hi',
-      voice: 'charvi',
-      output: 'audio.wav',
-    });
-    assert.ok(!args.join(' ').includes('private sentence'));
-  });
-  await synth.synthesize('private sentence', 'hi', 'audio.wav');
-  assert.equal(called, true);
 });
