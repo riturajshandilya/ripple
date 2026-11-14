@@ -1,49 +1,29 @@
 {
   "name": "ripple",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/dictation/worker.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
     "test": "tsx --test test/*.test.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "history": "node dist/history/cli.js",
-    "eval:router": "tsx scripts/evaluate-router.ts",
-    "model:generate": "node scripts/generate-carriers.cjs && prettier --write skill/en-US.json src/alexa/generated-carriers.ts",
-    "memory": "node dist/memory/cli.js",
-    "eval:memory": "tsx scripts/evaluate-memory.ts",
-    "eval:extraction": "tsx scripts/evaluate-extraction.ts",
-    "eval:semantic": "tsx scripts/evaluate-semantic.ts",
-    "eval:history-semantic": "tsx scripts/evaluate-history-semantic.ts",
-    "eval:always": "tsx scripts/evaluate-always-retrieval.ts",
-    "voice": "node dist/mac/voice.js",
-    "test:mac-focus": "python3 scripts/test_macos_focus.py",
     "app:build": "npm run build && python3 scripts/build_dictation_app.py",
+    "test:mac-focus": "python3 scripts/test_macos_focus.py",
     "test:mac-browser": "python3 scripts/test_macos_browser.py"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Offline-first macOS menu-bar voice dictation app with local Whisper transcription and Accessibility-guarded insertion.",
   "dependencies": {
     "@types/better-sqlite3": "^9.6.0",
-    "ask-sdk-core": "^2.14.0",
-    "ask-sdk-express-adapter": "^2.14.0",
     "better-sqlite3": "^12.11.1",
-    "dotenv": "^18.0.10",
-    "express": "^5.3.0",
-    "openai": "^6.49.0",
-    "pino": "^10.4.0",
-    "sqlite-vec": "^0.1.7"
+    "dotenv": "^18.0.10"
   },
   "private": true,
   "devDependencies": {
-    "@types/express": "^5.0.6",
     "@types/node": "^26.6.6",
-    "@types/supertest": "^7.2.1",
     "prettier": "^3.9.10",
-    "supertest": "^7.3.2",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }

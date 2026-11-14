@@ -1,6 +1,13 @@
 import { appendFileSync, chmodSync, existsSync, mkdirSync, renameSync, statSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { RetrievalSummary } from '../core/assistant';
+
+export interface RetrievalSummary {
+  durationMs: number;
+  historyCount: number;
+  memoryCount: number;
+  historyComplete: boolean;
+  memoryComplete: boolean;
+}
 
 // Content-free metrics only. One rotated file bounds disk use.
 export class TimingLog {

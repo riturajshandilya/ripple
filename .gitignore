@@ -18,3 +18,4 @@ data/
 __pycache__/
 *.pyc
 /main
+PROGRESS.md
